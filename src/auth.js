@@ -22,18 +22,9 @@ module.exports.authen = function authen(fastify, { queue }, next) {
   fastify.after(() => {
     const serverAdapter = new FastifyAdapter();
 
-    let queues = []
+    let queues = [];
     queue.forEach(q => {
       queues.push(new BullMQAdapter(q));
-    });
-
-    const basePath = process.env.R7PLATFORM_QUEUEUI_BASE_PATH || '/queues'
-
-    const urlBasePath = `${basePath}/ui`
-    serverAdapter.setBasePath(urlBasePath)
-
-    fastify.register(serverAdapter.registerPlugin(), {
-      prefix: '/ui'
     });
 
     createBullBoard({
@@ -46,18 +37,21 @@ module.exports.authen = function authen(fastify, { queue }, next) {
       }
     });
 
+    serverAdapter.setBasePath('/ui');
+    fastify.register(serverAdapter.registerPlugin(), { prefix: '/ui' });
+
     fastify.register(pointOfView, {
       engine: {
         ejs: require('ejs'),
       },
-      root: path.join(__dirname, './views'),
+      root: path.resolve('./views'),
     });
 
     fastify.route({
       method: 'GET',
       url: '/',
       handler: (req, reply) => {
-        reply.redirect(urlBasePath);
+        reply.redirect('/ui');
       },
     });
 
@@ -88,7 +82,7 @@ module.exports.authen = function authen(fastify, { queue }, next) {
               httpOnly: true,
               sameSite: true, // alternative CSRF protection
             })
-            .send({ success: true, url: `${basePath}/ui` });
+            .send({ success: true, url: '/ui' });
         } else {
           reply.code(401).send({ error: 'invalid_username_password' });
         }
@@ -103,8 +97,8 @@ module.exports.authen = function authen(fastify, { queue }, next) {
       try {
         await request.jwtVerify();
       } catch (error) {
-        const url = basePath + '/login'
-        reply.redirect(url);
+        // reply.code(401).send({ error: 'Unauthorized' });
+        reply.redirect('/login');
       }
     });
   });
