@@ -10,7 +10,9 @@
   "author": "Satit Rianpit <rianpit@gmail.com>",
   "license": "GPLv3",
   "dependencies": {
+    "@bull-board/api": "^5.8.0",
     "@bull-board/fastify": "^5.8.0",
+    "@bull-board/ui": "^5.8.0",
     "@fastify/cookie": "^9.0.4",
     "@fastify/jwt": "^7.2.0",
     "@fastify/view": "^8.0.0",
